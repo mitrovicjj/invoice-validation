@@ -1,7 +1,6 @@
 from fastapi import FastAPI
+from app.routers import invoices
 
-app = FastAPI()
+app = FastAPI(title="Invoice extraction API")
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+app.include_router(invoices.router, prefix="/api")
