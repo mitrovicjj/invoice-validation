@@ -15,10 +15,10 @@ class LineItem(BaseModel):
 
 
 class RawInvoiceResult(BaseModel):
-    invoice_number: FieldResult
-    invoice_date: FieldResult
-    vendor_name: FieldResult
-    total_amount: FieldResult
+    invoice_number: Optional[str] = ""
+    invoice_date: Optional[str] = ""
+    vendor_name: Optional[str] = ""
+    total_amount: Optional[float] = 0.0
     line_items: Optional[List[Any]] = []
     overall_confidence: Optional[float] = None
     overall_valid: Optional[bool] = None

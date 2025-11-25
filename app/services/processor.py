@@ -15,17 +15,39 @@ async def process_invoice_upload(upload_file):
     extracted = extract_invoice_from_file(temp_path)
     validated = validate_invoice_data(extracted)
 
-    # vraca dict - kompatibilno sa pydantic
+    # helper da izvuce value iz dict strukture
+    def get_value(field, default=""):
+        if isinstance(field, dict):
+            val = field.get("value", default)
+            # ao je val None, vrati prazan string
+            return val if val is not None else default
+        return default
+    
+    def get_float_value(field, default=0.0):
+        if isinstance(field, dict):
+            val = field.get("value", default)
+            try:
+                return float(val) if val is not None else default
+            except (ValueError, TypeError):
+                return default
+        return default
+
+    line_items_raw = validated.get("line_items", [])
+    if isinstance(line_items_raw, dict):
+        line_items = line_items_raw.get("value", [])
+    else:
+        line_items = line_items_raw if isinstance(line_items_raw, list) else []
 
     return {
-        "invoice_number": validated.get("invoice_number", ""),
-        "invoice_date": validated.get("invoice_date", ""),
-        "vendor_name": validated.get("vendor_name", ""),
-        "total_amount": validated.get("total_amount", 0.0),
-        "line_items": validated.get("line_items", []),
-        "valid": validated.get("valid", False),
-        "confidence": validated.get("confidence", 0.0),
+        "invoice_number": get_value(validated.get("invoice_number"), ""),
+        "invoice_date": get_value(validated.get("invoice_date"), ""),
+        "vendor_name": get_value(validated.get("vendor_name"), ""),
+        "total_amount": get_float_value(validated.get("total_amount"), 0.0),
+        "line_items": line_items,
+        "overall_confidence": validated.get("overall_confidence", 0.0),
+        "overall_valid": validated.get("overall_valid", False),
     }
+
 
 def _safe_field(field):
     """
